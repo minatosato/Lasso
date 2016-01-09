@@ -2,11 +2,11 @@
 # L1正則化(Lasso)
 $(\*)$について，$q=1$のものを**L1正則化(Lasso)**[[Tibshirani, 1996](http://statweb.stanford.edu/~tibs/lasso/lasso.pdf)]といいます．LassoはLeast absolute shrinkage and selection operatorの略らしいですね．
 
-```math
+$$
 \begin{aligned}
 \boldsymbol{S}_{\lambda}(\boldsymbol{\beta})  = ||\boldsymbol{y}-\boldsymbol{X\beta}||^2 + \lambda||\boldsymbol{\beta}||_1 
 \end{aligned}
-```
+$$
 
 L2正則化のときと同様に，$\boldsymbol{\beta}$で偏微分して．．．推定量を求めたいところですが，L1の誤差関数の正則化項($i.e., \lambda |\boldsymbol{\beta}|$)が$\boldsymbol{\beta}$で偏微分不可能なため，L2正則化のときのようには推定量を求めることができません．そこで今回は**CD(Coordinate Descent)**[J Friedman et al., [2007](http://arxiv.org/pdf/0708.1485.pdf);[2010](http://core.ac.uk/download/files/153/6287975.pdf)]というアルゴリズムを用いて$\boldsymbol{\beta}_{lasso}$を推定したいと思います．
 
