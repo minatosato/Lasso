@@ -1,5 +1,6 @@
 
 #Lasso
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 誤差関数にL1ノルムの正則化を加えたものを **L1正則化(Lasso)** [[Tibshirani, 1996](http://statweb.stanford.edu/~tibs/lasso/lasso.pdf)]といいます．LassoはLeast absolute shrinkage and selection operatorの略らしいですね．
 
 $$\boldsymbol{S}_{\lambda}(\boldsymbol{\beta})  = ||\boldsymbol{y}-\boldsymbol{X\beta}||^2 + \lambda||\boldsymbol{\beta}||_1$$
