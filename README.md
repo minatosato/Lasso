@@ -1,20 +1,17 @@
 
-# L1正則化(Lasso)
-$(\*)$について，$q=1$のものを**L1正則化(Lasso)**[[Tibshirani, 1996](http://statweb.stanford.edu/~tibs/lasso/lasso.pdf)]といいます．LassoはLeast absolute shrinkage and selection operatorの略らしいですね．
+#Lasso
+誤差関数にL1ノルムの正則化を加えたものを **L1正則化(Lasso)** [[Tibshirani, 1996](http://statweb.stanford.edu/~tibs/lasso/lasso.pdf)]といいます．LassoはLeast absolute shrinkage and selection operatorの略らしいですね．
+
+$$\boldsymbol{S}_{\lambda}(\boldsymbol{\beta})  = ||\boldsymbol{y}-\boldsymbol{X\beta}||^2 + \lambda||\boldsymbol{\beta}||_1$$
+
+L2正則化のときと同様に， $\boldsymbol{\beta}$  で偏微分して．．．推定量を求めたいところですが，L1の誤差関数の正則化項( $i.e., \lambda |\boldsymbol{\beta}|$ )が $\boldsymbol{\beta}$ で偏微分不可能なため，L2正則化のときのようには推定量を求めることができません．そこで今回は**CD(Coordinate Descent)**[J Friedman et al., [2007](http://arxiv.org/pdf/0708.1485.pdf);[2010](http://core.ac.uk/download/files/153/6287975.pdf)]というアルゴリズムを用いて $\boldsymbol{\beta}_{lasso}$ を推定したいと思います．
 
 $$
-\begin{aligned}
-\boldsymbol{S}_{\lambda}(\boldsymbol{\beta})  = ||\boldsymbol{y}-\boldsymbol{X\beta}||^2 + \lambda||\boldsymbol{\beta}||_1 
-\end{aligned}
-$$
-
-L2正則化のときと同様に，$\boldsymbol{\beta}$で偏微分して．．．推定量を求めたいところですが，L1の誤差関数の正則化項($i.e., \lambda |\boldsymbol{\beta}|$)が$\boldsymbol{\beta}$で偏微分不可能なため，L2正則化のときのようには推定量を求めることができません．そこで今回は**CD(Coordinate Descent)**[J Friedman et al., [2007](http://arxiv.org/pdf/0708.1485.pdf);[2010](http://core.ac.uk/download/files/153/6287975.pdf)]というアルゴリズムを用いて$\boldsymbol{\beta}_{lasso}$を推定したいと思います．
-
-```math
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
 \begin{aligned}
 \boldsymbol{\beta}_{lasso} & = \argmin_{\boldsymbol{\beta} \in \mathcal{R^p}}　\biggl[ ||\boldsymbol{y}-\boldsymbol{X\beta}||^2 + \lambda ||\boldsymbol{\beta}||_1 \biggr]
 \end{aligned}
-```
+$$
 
 ## なぜL1正則化か
 その前に，L1正則化をすると何が嬉しいのか，どういった回帰係数($\boldsymbol{\beta}$)が得られるのか確認してましょう．
@@ -50,7 +47,7 @@ CDでは，各パラメータ($i.e.,\ \beta_1, \beta_2,...,\beta_p$)毎に誤差
 
 ```math
 \begin{aligned}
-\boldsymbol{S}_{\lambda}(\boldsymbol{\beta}) & =\frac{1}{2n} ||\boldsymbol{y}-\boldsymbol{X\beta}||^2 + \lambda||\boldsymbol{\beta}||_1 
+\boldsymbol{S}_{\lambda}(\boldsymbol{\beta}) & =\frac{1}{2n} ||\boldsymbol{y}-\boldsymbol{X\beta}||^2 + \lambda||\boldsymbol{\beta}||_1
 \end{aligned}
 ```
 今回は誤差関数を上のような式として，$\beta_j$で微分して更新式を得ます．
@@ -75,7 +72,7 @@ $\beta_j$について解くと，
 
 ```math
 \begin{aligned}
-S(x, \lambda) = 
+S(x, \lambda) =
   \left\{
     \begin{array}{l}
       x - \lambda & (x > \lambda) \\
@@ -101,8 +98,8 @@ S(x, \lambda) =
 となります．
 あとは$\beta_i$の更新を$1,\cdots, p$について繰り返し行えばいいだけです！  
 更新アルゴリズムの擬似コードを示します．  
-  
-  
+
+
 LassoにおけるCoordinate Descent  
 01　$\boldsymbol{\beta}$の初期化，$\lambda$の固定  
 02　if 切片がある:  
