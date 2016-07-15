@@ -8,7 +8,7 @@ This is implementation of a coordinate descent for Lasso.
 
 ## Requirements
 - NumPy
-- Pandas
+- Pandas (To run a sample file)
 
 ## Usage
 
@@ -17,8 +17,15 @@ git clone https://github.com/hogefugabar/Lasso
 cd Lasso
 ```
 
-download [this file](https://sense.io/csrudolflai/data-mining-with-r/files/Boston.csv) to Lasso directory.
+```py
+from lasso import Lasso
+model = Lasso(alpha=1.0, max_iter=1000).fit(X=X, y=y)
+```
+
+To run a sample program for Boston dataset,
 
 ```
-python lasso.py
+python sample.py
 ```
+
+
