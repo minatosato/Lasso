@@ -8,6 +8,7 @@ This is implementation of a coordinate descent for Lasso.
 
 ## Requirements
 - NumPy
+- Scikit-Learn
 - Pandas (To run a sample file)
 
 ## Usage
