@@ -20,7 +20,7 @@ cd Lasso
 
 ```py
 from lasso import Lasso
-model = Lasso(alpha=1.0, max_iter=1000).fit(X=X, y=y)
+model = Lasso(alpha=1.0, max_iter=1000).fit(X, y)
 ```
 
 To run a sample program for Boston dataset,

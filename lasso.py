@@ -8,7 +8,7 @@ from copy import deepcopy
 
 class Lasso(BaseEstimator, RegressorMixin):
 	def __init__(self, alpha=1.0, max_iter=1000, fit_intercept=True):
-		self.lambda_ = alpha # 正則化項の係数
+		self.alpha = alpha # 正則化項の係数
 		self.max_iter = max_iter # 繰り返しの回数
 		self.fit_intercept = fit_intercept # 切片(i.e., \beta_0)を用いるか
 		self.coef_ = None # 回帰係数(i.e., \beta)保存用変数
@@ -37,7 +37,7 @@ class Lasso(BaseEstimator, RegressorMixin):
 				tmp_beta[j] = 0.0
 				r_j = y - np.dot(X, tmp_beta)
 				arg1 = np.dot(X[:, j], r_j)
-				arg2 = self.lambda_*X.shape[0]
+				arg2 = self.alpha*X.shape[0]
 
 				beta[j] = self._soft_thresholding_operator(arg1, arg2)/(X[:, j]**2).sum()
 
@@ -52,7 +52,7 @@ class Lasso(BaseEstimator, RegressorMixin):
 
 		return self
 
-	def predict(self):
+	def predict(self, X):
 		y = np.dot(X, self.coef_)
 		if self.fit_intercept:
 			y += self.intercept_*np.ones(len(y))
