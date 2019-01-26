@@ -7,10 +7,8 @@
 #
 
 import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin
-from copy import deepcopy
 
-class Lasso(BaseEstimator, RegressorMixin):
+class Lasso:
     def __init__(self, alpha: float = 1.0, max_iter: int = 1000, fit_intercept: bool = True) -> None:
         self.alpha: float = alpha # 正則化項の係数
         self.max_iter: int = max_iter # 繰り返しの回数
@@ -18,15 +16,15 @@ class Lasso(BaseEstimator, RegressorMixin):
         self.coef_ = None # 回帰係数(i.e., \beta)保存用変数
         self.intercept_ = None # 切片保存用変数
 
-    def _soft_thresholding_operator(self, x, lambda_):
-        if x > 0 and lambda_ < abs(x):
+    def _soft_thresholding_operator(self, x: float, lambda_: float) -> float:
+        if x > 0.0 and lambda_ < abs(x):
             return x - lambda_
-        elif x < 0 and lambda_ < abs(x):
+        elif x < 0.0 and lambda_ < abs(x):
             return x + lambda_
         else:
-            return 0
+            return 0.0
 
-    def fit(self, X, y):
+    def fit(self, X: np.ndarray, y: np.ndarray):
         if self.fit_intercept:
             X = np.column_stack((np.ones(len(X)),X))
 
@@ -56,7 +54,7 @@ class Lasso(BaseEstimator, RegressorMixin):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: np.ndarray):
         y = np.dot(X, self.coef_)
         if self.fit_intercept:
             y += self.intercept_*np.ones(len(y))
