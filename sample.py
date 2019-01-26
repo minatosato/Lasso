@@ -1,8 +1,13 @@
-#! -*- coding: utf-8 -*-
+# 
+# Copyright (c) 2016-2019 Minato Sato
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+#
 
 import pandas as pd
 import numpy as np
-from sklearn import cross_validation
 from lasso import Lasso
 
 df = pd.read_csv("Boston.csv", index_col=0)
@@ -16,5 +21,3 @@ model.fit(X, y)
 print(model.intercept_)
 print(model.coef_)
 
-scores = cross_validation.cross_val_score(model, X, y, cv=5, scoring='mean_squared_error')
-print(np.mean(scores))
