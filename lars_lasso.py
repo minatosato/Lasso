@@ -1,0 +1,84 @@
+#
+# Copyright (c) 2016-2021 Minato Sato
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+#
+
+import numpy as np
+from sklearn import datasets
+
+
+class LarsLasso:
+    def __init__(self, alpha: float = 1.0):
+        self.alpha = alpha
+
+    def predict(self, X: np.ndarray):
+        y = np.dot(X, self.coef_) + self.intercept_
+        return y
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        n, p = X.shape
+
+        self.intercept_ = y.mean()
+        y = y - self.intercept_
+        self.coef_ = np.zeros(p)
+
+        active_set = []
+        inactive_set = list(range(p))
+        beta = np.zeros(p)
+        mu = np.zeros(n)
+
+        for k in range(min(p, n - 1)):
+            c = np.dot(X.T, y - mu)
+            j = inactive_set[np.argmax(np.abs(c[inactive_set]))]
+            C = np.amax(np.abs(c))
+            active_set.append(j)
+            inactive_set.remove(j)
+            s = np.sign(c[active_set]).reshape((1, len(active_set)))
+            XA = np.copy(X[:, active_set] * s)
+
+            GA = XA.T @ XA
+            GA_inv = np.linalg.inv(GA)
+
+            one = np.ones((len(active_set), 1))
+            AA = (1. / np.sqrt(one.T @ GA_inv @ one)).flatten()[0]
+
+            w = AA * GA_inv @ one
+            u = XA @ w
+
+            a = X.T @ u
+            d = s.T * w
+
+            if k == p - 1:
+                gamma = C / AA
+            else:
+                gamma_candidates = np.zeros((len(inactive_set), 2))
+                for _j, jj in enumerate(inactive_set):
+                    gamma_candidates[_j, 0] = (C - c[jj]) / (AA - a[jj])
+                    gamma_candidates[_j, 1] = (C + c[jj]) / (AA + a[jj])
+                gamma = gamma_candidates[gamma_candidates > 0].min()
+
+            new_beta = beta[active_set] + gamma * d.flatten()
+            lambda_ = np.abs(X[:, active_set[0]] @ (y - X @ beta)) * 2 / n
+            if lambda_ < self.alpha:
+                break
+
+            mu = mu + gamma * u.flatten()
+            beta[active_set] = new_beta.copy()
+            self.coef_ = beta.copy()
+        return self
+
+
+if __name__ == "__main__":
+    boston_housing = datasets.load_boston()
+    X = boston_housing.data
+    y = boston_housing.target
+
+    X = (X - X.mean(axis=0, keepdims=True)) / X.std(axis=0, keepdims=True)
+    model = LarsLasso(alpha=1.0)
+    model.fit(X, y)
+
+    print(model.intercept_)
+    print(model.coef_)
