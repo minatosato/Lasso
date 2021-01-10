@@ -7,7 +7,7 @@ This is implementation of Lasso.
 - Coordinate Descent for Lasso [J Friedman et al., [2007](http://arxiv.org/pdf/0708.1485.pdf);[2010](http://core.ac.uk/download/files/153/6287975.pdf)]
 - Least Angle Regression (LARS) [Efron et al., [2004](http://statweb.stanford.edu/~imj/WEBLIST/2004/LarsAnnStat04.pdf)]
 
-See the following Japanese blog entries for details of algorithm.
+See the following blog entries written in Japanese for details of algorithm.
 - [Coordinate Descent Explained](https://satopirka.com/2017/10/lasso/)
 - [LARS Explained](https://satopirka.com/2021/01/lars-lasso/)
 
