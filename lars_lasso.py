@@ -8,7 +8,6 @@
 
 import numpy as np
 from sklearn import datasets
-import matplotlib.pyplot as plt
 
 
 class LarsLasso:
@@ -21,7 +20,6 @@ class LarsLasso:
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         n, p = X.shape
-        self._beta = []
 
         self.intercept_ = y.mean()
         y = y - self.intercept_
@@ -86,37 +84,21 @@ class LarsLasso:
             beta[active_set] = new_beta.copy()
             self.coef_ = beta.copy()
 
-            self._beta.append(self.coef_.copy())
             if flag:
                 active_set.remove(j)
                 inactive_set.append(j)
             k = len(active_set)
-            print(np.round(beta, 3)[6])
         return self
 
 
 if __name__ == "__main__":
-    dataset = datasets.load_diabetes()
+    dataset = datasets.load_boston()
     X = dataset.data
     y = dataset.target
 
     X = (X - X.mean(axis=0, keepdims=True)) / X.std(axis=0, keepdims=True)
-    model = LarsLasso(alpha=.0)
+    model = LarsLasso(alpha=1.0)
     model.fit(X, y)
 
     print(model.intercept_)
     print(model.coef_)
-
-    # # plot
-    # xx = np.sum(np.abs(np.array(model._beta)), axis=1)
-    # xx /= xx[-1]
-    # plt.plot(xx, np.array(model._beta))
-    # (y_min, y_max) = plt.ylim()
-    # plt.vlines(xx, y_min, y_max, linestyle='dashed')
-    # plt.xlabel(r"$\frac{|\beta_j|}{\max|\beta_j|}$")
-    # plt.ylabel('Coefficients')
-    # plt.title('LARS Path')
-    # plt.axis('tight')
-    # plt.show()
-
-    # print(np.linalg.solve(X.T @ X, X.T @ (y - y.mean())))

@@ -64,13 +64,13 @@ class CoordinateDescentLasso:
 
 
 if __name__ == "__main__":
-    boston_housing = datasets.load_boston()
-    X = boston_housing.data
-    y = boston_housing.target
+    dataset = datasets.load_boston()
+    X = dataset.data
+    y = dataset.target
 
     X = (X - X.mean(axis=0, keepdims=True)) / X.std(axis=0, keepdims=True)
 
-    model = CoordinateDescentLasso(alpha=0)
+    model = CoordinateDescentLasso(alpha=1.0 / 2)
     model.fit(X, y)
 
     print(model.intercept_)
