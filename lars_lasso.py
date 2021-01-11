@@ -30,8 +30,10 @@ class LarsLasso:
         beta = np.zeros(p)
         mu = np.zeros(n)
 
-        for k in range(min(p, n - 1)):
+        k = 0
+        while k != min(p, n - 1):
             c = np.dot(X.T, y - mu)
+            # print(np.sign(c[active_set]) * np.sign(beta[active_set]))
             j = inactive_set[np.argmax(np.abs(c[inactive_set]))]
             C = np.amax(np.abs(c))
             active_set.append(j)
@@ -60,21 +62,39 @@ class LarsLasso:
                     gamma_candidates[_j, 1] = (C + c[jj]) / (AA + a[jj])
                 gamma = gamma_candidates[gamma_candidates > 0].min()
 
+            gamma_candidates_tilde = - beta[active_set] / d.flatten()
+            gamma_tilde = gamma_candidates_tilde[gamma_candidates_tilde > 0].min() if len(
+                gamma_candidates_tilde[gamma_candidates_tilde > 0]) > 0 else 100000
+
+            flag = False
+            if gamma_tilde < gamma:
+                gamma = gamma_tilde
+                j = active_set[list(gamma_candidates_tilde).index(gamma)]
+                flag = True
+
             new_beta = beta[active_set] + gamma * d.flatten()
-            lambda_ = np.abs(X[:, active_set[0]] @ (y - X @ beta)) * 2 / n
+            idx = 0 if j != 0 else 1
+            tmp_beta = np.zeros(p)
+            tmp_beta[active_set] = new_beta.copy()
+            lambda_ = np.abs(X[:, active_set[idx]] @ (y - X @ tmp_beta)) * 2 / n
             if lambda_ < self.alpha:
                 break
 
             mu = mu + gamma * u.flatten()
             beta[active_set] = new_beta.copy()
             self.coef_ = beta.copy()
+
+            if flag:
+                active_set.remove(j)
+                inactive_set.append(j)
+            k = len(active_set)
         return self
 
 
 if __name__ == "__main__":
-    boston_housing = datasets.load_boston()
-    X = boston_housing.data
-    y = boston_housing.target
+    dataset = datasets.load_boston()
+    X = dataset.data
+    y = dataset.target
 
     X = (X - X.mean(axis=0, keepdims=True)) / X.std(axis=0, keepdims=True)
     model = LarsLasso(alpha=1.0)
