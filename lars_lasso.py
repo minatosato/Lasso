@@ -21,7 +21,7 @@ class LarsLasso:
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         n, p = X.shape
-        self._beta = np.zeros((min(p, n - 1), p))
+        self._beta = []
 
         self.intercept_ = y.mean()
         y = y - self.intercept_
@@ -35,6 +35,7 @@ class LarsLasso:
         k = 0
         while k != min(p, n - 1):
             c = np.dot(X.T, y - mu)
+            # print(np.sign(c[active_set]) * np.sign(beta[active_set]))
             j = inactive_set[np.argmax(np.abs(c[inactive_set]))]
             C = np.amax(np.abs(c))
             active_set.append(j)
@@ -85,18 +86,19 @@ class LarsLasso:
             beta[active_set] = new_beta.copy()
             self.coef_ = beta.copy()
 
-            self._beta[k] = self.coef_.copy()
+            self._beta.append(self.coef_.copy())
             if flag:
                 active_set.remove(j)
                 inactive_set.append(j)
             k = len(active_set)
+            print(np.round(beta, 3)[6])
         return self
 
 
 if __name__ == "__main__":
-    boston_housing = datasets.load_boston()
-    X = boston_housing.data
-    y = boston_housing.target
+    dataset = datasets.load_diabetes()
+    X = dataset.data
+    y = dataset.target
 
     X = (X - X.mean(axis=0, keepdims=True)) / X.std(axis=0, keepdims=True)
     model = LarsLasso(alpha=.0)
@@ -105,18 +107,16 @@ if __name__ == "__main__":
     print(model.intercept_)
     print(model.coef_)
 
-    print(model._beta)
-
-    # plot
-    xx = np.sum(np.abs(model._beta), axis=1)
-    xx /= xx[-1]
-    plt.plot(xx, model._beta)
-    (y_min, y_max) = plt.ylim()
-    plt.vlines(xx, y_min, y_max, linestyle='dashed')
-    plt.xlabel(r"$\frac{|\beta_j|}{\max|\beta_j|}$")
-    plt.ylabel('Coefficients')
-    plt.title('LARS Path')
-    plt.axis('tight')
-    plt.show()
+    # # plot
+    # xx = np.sum(np.abs(np.array(model._beta)), axis=1)
+    # xx /= xx[-1]
+    # plt.plot(xx, np.array(model._beta))
+    # (y_min, y_max) = plt.ylim()
+    # plt.vlines(xx, y_min, y_max, linestyle='dashed')
+    # plt.xlabel(r"$\frac{|\beta_j|}{\max|\beta_j|}$")
+    # plt.ylabel('Coefficients')
+    # plt.title('LARS Path')
+    # plt.axis('tight')
+    # plt.show()
 
     # print(np.linalg.solve(X.T @ X, X.T @ (y - y.mean())))
