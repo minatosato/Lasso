@@ -8,6 +8,7 @@
 
 import numpy as np
 from sklearn import datasets
+import matplotlib.pyplot as plt
 
 
 class LarsLasso:
@@ -20,6 +21,7 @@ class LarsLasso:
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         n, p = X.shape
+        self._beta = np.zeros((min(p, n - 1), p))
 
         self.intercept_ = y.mean()
         y = y - self.intercept_
@@ -76,7 +78,6 @@ class LarsLasso:
             tmp_beta = np.zeros(p)
             tmp_beta[active_set] = new_beta.copy()
             lambda_ = np.abs(X[:, active_set[idx]] @ (y - X @ tmp_beta)) * 2 / n
-            print(lambda_)
             if lambda_ < self.alpha:
                 break
 
@@ -84,6 +85,7 @@ class LarsLasso:
             beta[active_set] = new_beta.copy()
             self.coef_ = beta.copy()
 
+            self._beta[k] = self.coef_.copy()
             if flag:
                 active_set.remove(j)
                 inactive_set.append(j)
@@ -97,10 +99,24 @@ if __name__ == "__main__":
     y = boston_housing.target
 
     X = (X - X.mean(axis=0, keepdims=True)) / X.std(axis=0, keepdims=True)
-    model = LarsLasso(alpha=1.0)
+    model = LarsLasso(alpha=.0)
     model.fit(X, y)
 
     print(model.intercept_)
     print(model.coef_)
+
+    print(model._beta)
+
+    # plot
+    xx = np.sum(np.abs(model._beta), axis=1)
+    xx /= xx[-1]
+    plt.plot(xx, model._beta)
+    (y_min, y_max) = plt.ylim()
+    plt.vlines(xx, y_min, y_max, linestyle='dashed')
+    plt.xlabel(r"$\frac{|\beta_j|}{\max|\beta_j|}$")
+    plt.ylabel('Coefficients')
+    plt.title('LARS Path')
+    plt.axis('tight')
+    plt.show()
 
     # print(np.linalg.solve(X.T @ X, X.T @ (y - y.mean())))
