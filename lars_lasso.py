@@ -30,14 +30,21 @@ class LarsLasso:
         beta = np.zeros(p)
         mu = np.zeros(n)
 
+        change_sign_flag = False
+
         k = 0
         while k != min(p, n - 1):
             c = np.dot(X.T, y - mu)
             # print(np.sign(c[active_set]) * np.sign(beta[active_set]))
-            j = inactive_set[np.argmax(np.abs(c[inactive_set]))]
+            if change_sign_flag:
+                # remove j from the calculation of the next equiangular direction.
+                pass
+            else:
+                j = inactive_set[np.argmax(np.abs(c[inactive_set]))]
+                # print(f"add {j=}")
+                active_set.append(j)
+                inactive_set.remove(j)
             C = np.amax(np.abs(c))
-            active_set.append(j)
-            inactive_set.remove(j)
             s = np.sign(c[active_set]).reshape((1, len(active_set)))
             XA = np.copy(X[:, active_set] * s)
 
@@ -66,25 +73,37 @@ class LarsLasso:
             gamma_tilde = gamma_candidates_tilde[gamma_candidates_tilde > 0].min() if len(
                 gamma_candidates_tilde[gamma_candidates_tilde > 0]) > 0 else 100000
 
-            flag = False
+            change_sign_flag = False
             if gamma_tilde < gamma:
                 gamma = gamma_tilde
                 j = active_set[list(gamma_candidates_tilde).index(gamma)]
-                flag = True
+                # print(f"remove {j=}")
+                change_sign_flag = True
 
             new_beta = beta[active_set] + gamma * d.flatten()
             idx = 0 if j != 0 else 1
             tmp_beta = np.zeros(p)
             tmp_beta[active_set] = new_beta.copy()
             lambda_ = np.abs(X[:, active_set[idx]] @ (y - X @ tmp_beta)) * 2 / n
+
             if lambda_ < self.alpha:
+                prev_lambda_ = np.abs(X[:, active_set[idx]] @ (y - X @ self.coef_)) * 2 / n
+                if len(active_set) < 2 and prev_lambda_ < self.alpha:
+                    break
+                # print(prev_lambda_, lambda_, self.alpha)
+                modified_gamma = 0 + (gamma - 0) * (self.alpha - prev_lambda_) / (lambda_ - prev_lambda_)
+                beta[active_set] += modified_gamma * d.flatten()
+                mu = mu + modified_gamma * u.flatten()
+                self.coef_ = beta.copy()
+                # print(np.abs(X[:, active_set[idx]] @ (y - X @ self.coef_)) * 2 / n)
                 break
 
             mu = mu + gamma * u.flatten()
             beta[active_set] = new_beta.copy()
             self.coef_ = beta.copy()
+            # print(self.coef_)
 
-            if flag:
+            if change_sign_flag:
                 active_set.remove(j)
                 inactive_set.append(j)
             k = len(active_set)
@@ -97,7 +116,7 @@ if __name__ == "__main__":
     y = dataset.target
 
     X = (X - X.mean(axis=0, keepdims=True)) / X.std(axis=0, keepdims=True)
-    model = LarsLasso(alpha=1.0)
+    model = LarsLasso(alpha=1)
     model.fit(X, y)
 
     print(model.intercept_)

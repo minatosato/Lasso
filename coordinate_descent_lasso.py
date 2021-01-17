@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     X = (X - X.mean(axis=0, keepdims=True)) / X.std(axis=0, keepdims=True)
 
-    model = CoordinateDescentLasso(alpha=1.0 / 2)
+    model = CoordinateDescentLasso(alpha=1 / 2)
     model.fit(X, y)
 
     print(model.intercept_)
