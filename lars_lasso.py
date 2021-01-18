@@ -7,6 +7,7 @@
 #
 
 import numpy as np
+from sklearn.utils import arrayfuncs
 from sklearn import datasets
 
 
@@ -65,13 +66,11 @@ class LarsLasso:
             else:
                 gamma_candidates = np.zeros((len(inactive_set), 2))
                 for _j, jj in enumerate(inactive_set):
-                    gamma_candidates[_j, 0] = (C - c[jj]) / (AA - a[jj])
-                    gamma_candidates[_j, 1] = (C + c[jj]) / (AA + a[jj])
-                gamma = gamma_candidates[gamma_candidates > 0].min()
+                    gamma_candidates[_j] = [(C - c[jj]) / (AA - a[jj]), (C + c[jj]) / (AA + a[jj])]
+                gamma = arrayfuncs.min_pos(gamma_candidates)
 
             gamma_candidates_tilde = - beta[active_set] / d.flatten()
-            gamma_tilde = gamma_candidates_tilde[gamma_candidates_tilde > 0].min() if len(
-                gamma_candidates_tilde[gamma_candidates_tilde > 0]) > 0 else 100000
+            gamma_tilde = arrayfuncs.min_pos(gamma_candidates_tilde)
 
             change_sign_flag = False
             if gamma_tilde < gamma:

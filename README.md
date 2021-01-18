@@ -14,7 +14,7 @@ See the following blog entries written in Japanese for details of algorithm.
 ## Tested environment
 - python==3.8.3
 - numpy==1.18.5
-- sklearn==0.23.2 (To run a sample file)
+- sklearn==0.23.2
 
 
 
