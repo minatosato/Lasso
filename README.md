@@ -8,8 +8,8 @@ This is the implementation of Lasso.
 - Least Angle Regression (LARS) [Efron et al., [2004](http://statweb.stanford.edu/~imj/WEBLIST/2004/LarsAnnStat04.pdf)]
 
 For more information on the algorithms, please refer to the following blog entries written in Japanese:
-- [Coordinate Descent Explained](https://minatosato.com/2017/10/lasso/)
-- [LARS Explained](https://minatosato.com/2021/01/lars-lasso/)
+- [Coordinate Descent Explained](https://minatosato.com/blog/2017/10/lasso/)
+- [LARS Explained](https://minatosato.com/blog/2021/01/lars-lasso/)
 
 ## Test environment
 - python==3.8.3
