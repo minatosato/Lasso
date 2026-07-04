@@ -19,7 +19,7 @@ class CoordinateDescentLasso:
         self.intercept_ = None  # Stores the fitted intercept beta_0.
 
     def _soft_thresholding_operator(self, x: float, lambda_: float) -> float:
-        # L1 coordinate updates shrink small partial residual correlations to zero.
+        # Soft-thresholding sets small partial residual correlations to zero.
         if x > 0.0 and lambda_ < abs(x):
             return x - lambda_
         elif x < 0.0 and lambda_ < abs(x):
@@ -47,7 +47,7 @@ class CoordinateDescentLasso:
                 arg1 = np.dot(X[:, j], r_j)
                 arg2 = self.alpha * X.shape[0]
 
-                # The closed-form one-dimensional Lasso update is soft-thresholded.
+                # The closed-form one-dimensional Lasso update uses soft-thresholding.
                 beta[j] = self._soft_thresholding_operator(arg1, arg2) / (X[:, j]**2).sum()
 
                 if self.fit_intercept:

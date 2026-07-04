@@ -33,7 +33,7 @@ class LarsLasso:
         n, p = X.shape
 
         # The LARS derivation assumes centered y and predictors; recover the
-        # original-scale intercept after the coefficient path is selected.
+        # original-scale intercept after the coefficient path is computed.
         X_offset = X.mean(axis=0)
         y_offset = y.mean()
         X = X - X_offset
@@ -72,8 +72,8 @@ class LarsLasso:
             one = np.ones((len(active_set), 1))
             AA = (1. / np.sqrt(one.T @ GA_inv @ one)).flatten()[0]
 
-            # w gives the active coefficient direction and u is the unit
-            # equiangular direction that has equal angle to every active column.
+            # w gives the active coefficient direction, and u is the unit
+            # equiangular direction that makes equal angles with all active columns.
             w = AA * GA_inv @ one
             u = XA @ w
 
@@ -104,7 +104,8 @@ class LarsLasso:
             tmp_beta = np.zeros(p)
             tmp_beta[active_set] = new_beta.copy()
 
-            # Along the path, alpha equals max residual correlation divided by n.
+            # Along the path, the equivalent Lasso alpha is the maximum residual
+            # correlation divided by n.
             lambda_ = np.max(np.abs(X.T @ (y - X @ tmp_beta))) / n
 
             if lambda_ < self.alpha:
