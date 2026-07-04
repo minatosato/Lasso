@@ -7,8 +7,16 @@
 #
 
 import numpy as np
-from sklearn.utils import arrayfuncs
 from sklearn import datasets
+
+
+def _min_pos(values: np.ndarray) -> float:
+    # Only positive finite step lengths are reachable along the current path.
+    values = np.asarray(values, dtype=float)
+    values = values[np.isfinite(values) & (values > 0)]
+    if len(values) == 0:
+        return np.inf
+    return values.min()
 
 
 class LarsLasso:
@@ -20,10 +28,16 @@ class LarsLasso:
         return y
 
     def fit(self, X: np.ndarray, y: np.ndarray):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
         n, p = X.shape
 
-        self.intercept_ = y.mean()
-        y = y - self.intercept_
+        # The LARS derivation assumes centered y and predictors; recover the
+        # original-scale intercept after the coefficient path is selected.
+        X_offset = X.mean(axis=0)
+        y_offset = y.mean()
+        X = X - X_offset
+        y = y - y_offset
         self.coef_ = np.zeros(p)
 
         active_set = []
@@ -35,17 +49,20 @@ class LarsLasso:
 
         k = 0
         while k != min(p, n - 1):
+            # Correlations between each predictor and the current residual.
             c = np.dot(X.T, y - mu)
-            # print(np.sign(c[active_set]) * np.sign(beta[active_set]))
             if change_sign_flag:
-                # remove j from the calculation of the next equiangular direction.
+                # Lasso modification: after removing a zero-crossing coefficient,
+                # recompute the direction before adding another variable.
                 pass
             else:
+                # Add the inactive predictor most correlated with the residual.
                 j = inactive_set[np.argmax(np.abs(c[inactive_set]))]
-                # print(f"add {j=}")
                 active_set.append(j)
                 inactive_set.remove(j)
             C = np.amax(np.abs(c))
+
+            # Use signed active predictors so every active correlation is +C.
             s = np.sign(c[active_set]).reshape((1, len(active_set)))
             XA = np.copy(X[:, active_set] * s)
 
@@ -55,62 +72,67 @@ class LarsLasso:
             one = np.ones((len(active_set), 1))
             AA = (1. / np.sqrt(one.T @ GA_inv @ one)).flatten()[0]
 
+            # w gives the active coefficient direction and u is the unit
+            # equiangular direction that has equal angle to every active column.
             w = AA * GA_inv @ one
             u = XA @ w
 
-            a = X.T @ u
-            d = s.T * w
+            # a_j measures how fast each residual correlation changes along u.
+            a = (X.T @ u).ravel()
+            d = (s.T * w).ravel()
 
             if k == p - 1:
                 gamma = C / AA
             else:
+                # Move until an inactive predictor reaches the active correlation.
                 gamma_candidates = np.zeros((len(inactive_set), 2))
                 for _j, jj in enumerate(inactive_set):
                     gamma_candidates[_j] = [(C - c[jj]) / (AA - a[jj]), (C + c[jj]) / (AA + a[jj])]
-                gamma = arrayfuncs.min_pos(gamma_candidates)
+                gamma = _min_pos(gamma_candidates)
 
-            gamma_candidates_tilde = - beta[active_set] / d.flatten()
-            gamma_tilde = arrayfuncs.min_pos(gamma_candidates_tilde)
+            # Lasso-LARS must stop sooner if an active coefficient would change sign.
+            gamma_candidates_tilde = - beta[active_set] / d
+            gamma_tilde = _min_pos(gamma_candidates_tilde)
 
             change_sign_flag = False
             if gamma_tilde < gamma:
                 gamma = gamma_tilde
                 j = active_set[list(gamma_candidates_tilde).index(gamma)]
-                # print(f"remove {j=}")
                 change_sign_flag = True
 
-            new_beta = beta[active_set] + gamma * d.flatten()
-            idx = 0 if j != 0 else 1
+            new_beta = beta[active_set] + gamma * d
             tmp_beta = np.zeros(p)
             tmp_beta[active_set] = new_beta.copy()
-            lambda_ = np.abs(X[:, active_set[idx]] @ (y - X @ tmp_beta)) * 2 / n
+
+            # Along the path, alpha equals max residual correlation divided by n.
+            lambda_ = np.max(np.abs(X.T @ (y - X @ tmp_beta))) / n
 
             if lambda_ < self.alpha:
-                prev_lambda_ = np.abs(X[:, active_set[idx]] @ (y - X @ self.coef_)) * 2 / n
+                prev_lambda_ = np.max(np.abs(X.T @ (y - X @ self.coef_))) / n
                 if len(active_set) < 2 and prev_lambda_ < self.alpha:
                     break
-                # print(prev_lambda_, lambda_, self.alpha)
+                # Interpolate the current segment to stop exactly at the requested alpha.
                 modified_gamma = 0 + (gamma - 0) * (self.alpha - prev_lambda_) / (lambda_ - prev_lambda_)
-                beta[active_set] += modified_gamma * d.flatten()
+                beta[active_set] += modified_gamma * d
                 mu = mu + modified_gamma * u.flatten()
                 self.coef_ = beta.copy()
-                # print(np.abs(X[:, active_set[idx]] @ (y - X @ self.coef_)) * 2 / n)
                 break
 
             mu = mu + gamma * u.flatten()
             beta[active_set] = new_beta.copy()
             self.coef_ = beta.copy()
-            # print(self.coef_)
 
             if change_sign_flag:
                 active_set.remove(j)
                 inactive_set.append(j)
             k = len(active_set)
+        # Convert centered-data coefficients back to the original intercept.
+        self.intercept_ = y_offset - X_offset @ self.coef_
         return self
 
 
 if __name__ == "__main__":
-    dataset = datasets.load_boston()
+    dataset = datasets.load_diabetes()
     X = dataset.data
     y = dataset.target
 

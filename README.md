@@ -12,9 +12,8 @@ For more information on the algorithms, please refer to the following blog entri
 - [LARS Explained](https://minatosato.com/blog/2021/01/lars-lasso/)
 
 ## Test environment
-- python==3.8.3
-- numpy==1.18.5
-- sklearn==0.23.2
-
+- python==3.12.12
+- numpy==1.26.4
+- scikit-learn==1.8.0
 
 
